@@ -9,6 +9,11 @@ RUN apt-get update && apt-get install -y \
 
 # Set up a non-root user (Hugging Face requirement)
 RUN useradd -m -u 1000 user
+
+# Create a folder for HuggingFace to download models into (prevents permission errors)
+ENV DEEPFACE_HOME="/app/.deepface"
+RUN mkdir -p /app/.deepface && chown -R user:user /app
+
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
 
@@ -18,10 +23,6 @@ WORKDIR /app
 # Copy requirement files and install
 COPY --chown=user backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Create a folder for HuggingFace to download models into (prevents permission errors)
-ENV DEEPFACE_HOME="/app/.deepface"
-RUN mkdir -p /app/.deepface
 
 # Copy the actual application files
 COPY --chown=user backend/ /app/backend/
