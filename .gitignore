@@ -1,4 +1,7 @@
 venv/
+.venv/
+backend/venv/
+backend/.venv/
 .deepface/
 __pycache__/
 *.pyc
