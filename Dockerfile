@@ -2,7 +2,8 @@ FROM python:3.11-slim
 
 # Install system dependencies required for OpenCV and face processing
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
+    libglx-mesa0 \
     libglib2.0-0 \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
