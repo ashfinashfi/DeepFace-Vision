@@ -1,3 +1,13 @@
+---
+title: DeepFace Detector
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # DeepFace Detection Platform
 A real-time lightweight web application that detects faces and analyzes age, gender, and emotion securely in real time leveraging OpenCV and DeepFace. Built with a FastAPI websocket backend and vanilla JS.
 
