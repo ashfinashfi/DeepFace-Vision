@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+websockets
+deepface==0.0.99
+tf-keras~=2.15.0
+tensorflow<2.16
+keras==2.15.0
+opencv-python-headless<4.13
+numpy==1.26.4

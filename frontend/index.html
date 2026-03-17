@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepFace Core | Realtime Inference</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="top-bar glass-panel">
+            <div class="logo-area">
+                <div class="status-indicator" id="ws-status-dot"></div>
+                <h1>DeepFace <span>Vision</span></h1>
+            </div>
+            <div class="metrics">
+                <div class="metric">
+                    <span class="label">WS Status</span>
+                    <span class="value" id="ws-status-text">Disconnected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="feed-container glass-panel">
+                <div class="feed-header">
+                    <h2>Live Camera Feed</h2>
+                    <button id="toggle-camera" class="btn primary">Start Camera</button>
+                </div>
+                
+                <div class="video-wrapper">
+                    <!-- Hidden video element for local stream capture -->
+                    <video id="local-video" autoplay playsinline muted></video>
+                    <!-- Hidden canvas to extract frames -->
+                    <canvas id="frame-canvas"></canvas>
+                    
+                    <!-- The main image view where processed frames are rendered -->
+                    <img id="processed-feed" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 480'%3E%3Crect width='640' height='480' fill='%23111418'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='20' fill='%23333' text-anchor='middle' dominant-baseline='middle'%3EWaiting for camera...%3C/text%3E%3C/svg%3E" alt="Live Feed">
+                    
+                    <div id="loading-overlay" class="overlay hidden">
+                        <div class="spinner"></div>
+                        <p>Initializing Models...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="bottom-bar glass-panel">
+            <p>Real-time Face, Age, Gender, and Emotion Analysis powered by DeepFace.</p>
+        </footer>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
