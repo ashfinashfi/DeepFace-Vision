@@ -16,55 +16,59 @@ except Exception:
     pass
 print("DeepFace models loaded!")
 
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+cached_labels = {'age': 'N/A', 'gender': 'N/A', 'emotion': 'N/A'}
+frame_counter = 0
+
 def analyze_frame(frame: np.ndarray) -> np.ndarray:
+    global frame_counter, cached_labels
     try:
-        # analyze the frame, enforce_detection=False to avoid exceptions when no face is found
-        results = DeepFace.analyze(
-            img_path=frame,
-            actions=['age', 'gender', 'emotion'],
-            enforce_detection=False,
-            silent=True
-        )
+        # Fast Face Detection on grayscale image
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
         
-        # results can be a list or a dict (if single face). Ensure it's a list.
-        if not isinstance(results, list):
-            results = [results]
+        # If faces are found, get the biggest one
+        if len(faces) > 0:
+            # Sort by area (w*h) descending to track the most prominent face
+            faces = sorted(faces, key=lambda f: f[2]*f[3], reverse=True)
+            x, y, w, h = faces[0]
             
-        for face in results:
-            # We want to draw bounding box
-            region = face.get('region', {})
-            x = region.get('x', 0)
-            y = region.get('y', 0)
-            w = region.get('w', 0)
-            h = region.get('h', 0)
+            # Every 15th frame, run heavy DeepFace on the heavily cropped face to update cached labels
+            if frame_counter % 15 == 0:
+                face_crop = frame[max(0, y):y+h, max(0, x):x+w]
+                if face_crop.size > 0:
+                    try:
+                        res = DeepFace.analyze(face_crop, actions=['age', 'gender', 'emotion'], enforce_detection=False, silent=True)
+                        if isinstance(res, list):
+                            res = res[0]
+                        cached_labels['age'] = res.get('age', 'N/A')
+                        cached_labels['gender'] = res.get('dominant_gender', 'N/A')
+                        cached_labels['emotion'] = res.get('dominant_emotion', 'N/A')
+                    except:
+                        pass
             
-            # If no face detected or region is invalid
-            if w == 0 or h == 0 or x + y + w + h == 0:
-                continue
-                
-            age = face.get('age', 'N/A')
-            gender = face.get('dominant_gender', 'N/A')
-            emotion = face.get('dominant_emotion', 'N/A')
-            
-            # Draw bounding box
+            # Draw premium bounding box instantaneously
             box_color = (0, 255, 150) # Vivid green for premium feel
             cv2.rectangle(frame, (x, y), (x + w, y + h), box_color, 2)
             
-            # Add a dark semi-transparent rectangle behind text for better readability
+            # Draw dark semi-transparent rectangle behind text
             overlay = frame.copy()
             cv2.rectangle(overlay, (x, y - 50), (x + w, y), (0, 0, 0), -1)
             cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
             
-            # Prepare text
-            text_age_gen = f"{gender}, {age}"
-            text_emotion = f"{emotion.capitalize()}"
+            # Prepare text from cached high-latency inferences
+            text_age_gen = f"{cached_labels['gender']}, {cached_labels['age']}"
+            text_emotion = f"{cached_labels['emotion'].capitalize()}"
             
-            # Draw text above bounding box
+            # Draw text
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(frame, text_age_gen, (x + 5, y - 28), font, 0.6, (255, 255, 255), 1)
-            cv2.putText(frame, text_emotion, (x + 5, y - 8), font, 0.7, box_color, 2)
+            cv2.putText(frame, text_age_gen, (x + 5, y - 28), font, 0.55, (255, 255, 255), 1)
+            cv2.putText(frame, text_emotion, (x + 5, y - 8), font, 0.65, box_color, 2)
             
+        frame_counter += 1
+        
     except Exception as e:
-        logger.debug(f"Error in analysis (likely no face): {e}")
+        logger.debug(f"Error in analysis: {e}")
         
     return frame
