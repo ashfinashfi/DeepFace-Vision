@@ -36,17 +36,17 @@ def analyze_frame(frame: np.ndarray) -> np.ndarray:
             
             # Every 15th frame, run heavy DeepFace on the heavily cropped face to update cached labels
             if frame_counter % 15 == 0:
-                face_crop = frame[max(0, y):y+h, max(0, x):x+w]
+                face_crop = frame[max(0, y):y+h, max(0, x):x+w].copy()
                 if face_crop.size > 0:
                     try:
-                        res = DeepFace.analyze(face_crop, actions=['age', 'gender', 'emotion'], enforce_detection=False, silent=True)
+                        res = DeepFace.analyze(face_crop, actions=['gender', 'emotion'], enforce_detection=False, detector_backend='skip', silent=True)
                         if isinstance(res, list):
                             res = res[0]
-                        cached_labels['age'] = res.get('age', 'N/A')
+                        cached_labels['age'] = 'N/A' # Deprecated by upstream DeepFace
                         cached_labels['gender'] = res.get('dominant_gender', 'N/A')
                         cached_labels['emotion'] = res.get('dominant_emotion', 'N/A')
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.error(f"Deepface crop error: {e}")
             
             # Draw premium bounding box instantaneously
             box_color = (0, 255, 150) # Vivid green for premium feel
@@ -58,7 +58,7 @@ def analyze_frame(frame: np.ndarray) -> np.ndarray:
             cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
             
             # Prepare text from cached high-latency inferences
-            text_age_gen = f"{cached_labels['gender']}, {cached_labels['age']}"
+            text_age_gen = f"{cached_labels['gender']}"
             text_emotion = f"{cached_labels['emotion'].capitalize()}"
             
             # Draw text

@@ -29,6 +29,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY --chown=user backend/ /app/backend/
 COPY --chown=user frontend/ /app/frontend/
 
+# Move the LFS tracked age model weight securely to the deepface home registry
+RUN mv /app/backend/age_model_weights.h5 /app/.deepface/weights/age_model_weights.h5
+
 WORKDIR /app/backend
 
 # Expose the standard 7860 port HuggingFace expects
